@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, request, jsonify
-from db import get_chats, get_chat, new_chat, add_message, rename_chat, delete_chat
+from db import get_all_chats, get_chat, new_chat, add_message, rename_chat, delete_chat
 import os
 
 full_bp = Blueprint(
