@@ -9,6 +9,9 @@ from db import (
 )
 import requests
 import os
+from db import init_db
+init_db()
+
 
 bp = Blueprint("full", __name__, url_prefix="/full")
 
