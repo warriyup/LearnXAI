@@ -3,6 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <title>LearnX</title>
+
+    <!-- ✅ правильный путь к стилям -->
     <link rel="stylesheet" href="/full_version/static/style.css">
 </head>
 
@@ -10,31 +12,34 @@
 
 <div class="layout">
 
-    <!-- SIDEBAR -->
+    <!-- Sidebar -->
     <div class="sidebar">
         <div class="logo-box">
-            <img src="/full_version/static/logo.png" class="logo">
+            <!-- ✅ правильный путь к лого -->
+            <img src="/full_version/static/LearnX_Logo.jpg" class="logo">
             <h2>LearnX</h2>
         </div>
 
-        <button id="new-chat" class="menu-btn">Новый чат</button>
+        <button class="menu-btn main-btn" onclick="newChat()">Новый чат</button>
 
         <div class="section-title">Чаты</div>
         <div id="chat-list"></div>
     </div>
 
-    <!-- CHAT AREA -->
+    <!-- Chat Area -->
     <div class="chat-area">
         <div id="chat-box" class="chat-box"></div>
 
         <div class="input-area">
-            <textarea id="msg" placeholder="Введите сообщение..."></textarea>
+            <input id="msg" placeholder="Введите сообщение..." autofocus>
             <button id="send-btn" class="send-btn">➤</button>
         </div>
     </div>
 
 </div>
 
+<!-- ✅ правильный путь к JS -->
 <script src="/full_version/static/app.js"></script>
+
 </body>
 </html>
