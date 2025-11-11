@@ -1,0 +1,1 @@
+const chatBox=document.getElementById('chat-box');console.log('light loaded');
