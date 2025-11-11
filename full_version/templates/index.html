@@ -1,30 +1,33 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="utf-8" />
-    <title>LearnX Full</title>
-    <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <link rel="stylesheet" href="static/style.css" />
+    <meta charset="UTF-8">
+    <title>LearnX AI</title>
+    <link rel="stylesheet" href="/full/static/style.css">
 </head>
-<body class="full">
-<div class="layout">
-    <aside class="sidebar">
-        <div class="logo-box">
-            <img src="static/LearnX_Logo.jpg" class="logo" alt="logo">
-            <h1>LearnX</h1>
-        </div>
-        <button class="main-btn" onclick="newChat()">Новый чат</button>
-        <div class="section-title">Чаты</div>
-        <div id="chat-list" class="chat-list"></div>
-    </aside>
-    <main class="chat-area">
-        <div id="chat-box" class="chat-box"></div>
-        <div class="input-area">
-            <input id="msg" placeholder="Введите сообщение..." autocomplete="off">
-            <button id="send-btn" class="send-btn">➤</button>
-        </div>
-    </main>
+
+<body>
+
+<div id="sidebar">
+    <img id="logo" src="/full/static/logo.png" alt="logo">
+    <h2>LearnX</h2>
+
+    <button id="new-chat">Новый чат</button>
+
+    <h3>Чаты</h3>
+    <div id="chat-list"></div>
 </div>
-<script src="static/app.js"></script>
+
+<div id="chat-container">
+    <div id="chat-box"></div>
+
+    <div id="input-wrap">
+        <textarea id="msg" placeholder="Напишите сообщение..."></textarea>
+        <button id="send-btn">➤</button>
+    </div>
+</div>
+
+<script src="/full/static/app.js"></script>
+
 </body>
 </html>
