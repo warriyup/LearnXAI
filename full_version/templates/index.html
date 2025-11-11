@@ -1,45 +1,38 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
+    <meta charset="UTF-8" />
     <title>LearnX</title>
 
-    <!-- ✅ правильный путь к стилям -->
-    <link rel="stylesheet" href="/full_version/static/style.css">
+    <!-- FULL VERSION STATIC -->
+    <link rel="stylesheet" href="/full/static/style.css" />
+    <script defer src="/full/static/app.js"></script>
 </head>
 
 <body>
 
 <div class="layout">
 
-    <!-- Sidebar -->
+    <!-- SIDEBAR -->
     <div class="sidebar">
+
         <div class="logo-box">
-            <!-- ✅ правильный путь к лого -->
-            <img src="/full_version/static/LearnX_Logo.jpg" class="logo">
+            <img src="/full/static/LearnX_Logo.jpg" class="logo">
             <h2>LearnX</h2>
         </div>
 
-        <button class="menu-btn main-btn" onclick="newChat()">Новый чат</button>
+        <button class="menu-btn" onclick="newChat()">Новый чат</button>
 
         <div class="section-title">Чаты</div>
+
         <div id="chat-list"></div>
+
     </div>
 
-    <!-- Chat Area -->
+    <!-- CHAT AREA -->
     <div class="chat-area">
+
         <div id="chat-box" class="chat-box"></div>
 
         <div class="input-area">
-            <input id="msg" placeholder="Введите сообщение..." autofocus>
-            <button id="send-btn" class="send-btn">➤</button>
-        </div>
-    </div>
-
-</div>
-
-<!-- ✅ правильный путь к JS -->
-<script src="/full_version/static/app.js"></script>
-
-</body>
-</html>
+            <i
