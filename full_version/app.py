@@ -5,15 +5,15 @@ from openai import OpenAI
 
 from db import (
     init_db,
-    get_all_chats,
-    new_chat,
+    list_chats,
+    create_chat,
     get_chat,
     add_message,
     rename_chat,
     delete_chat
 )
 
-# Инициализация базы
+# инициализация базы
 init_db()
 
 full_bp = Blueprint("full", __name__)
@@ -22,14 +22,14 @@ client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 
 @full_bp.route("/list_chats")
-def list_chats():
-    return jsonify(get_all_chats())
+def list_chats_route():
+    return jsonify(list_chats())
 
 
 @full_bp.route("/new_chat", methods=["POST"])
-def create_chat():
+def new_chat_route():
     chat_id = str(uuid.uuid4())
-    new_chat(chat_id)
+    create_chat(chat_id)
     return jsonify({"chat_id": chat_id})
 
 
@@ -39,26 +39,28 @@ def get_chat_route(chat_id):
 
 
 @full_bp.route("/chat/<chat_id>", methods=["POST"])
-def ask_ai(chat_id):
+def chat_route(chat_id):
     data = request.get_json()
     message = data.get("message")
 
     if not message:
         return jsonify({"error": "empty message"}), 400
 
-    # Сохранить сообщение пользователя
+    # сохранить сообщение юзера
     add_message(chat_id, "user", message)
 
-    # Вызов ИИ
-    reply = client.chat.completions.create(
+    # запрос к ИИ
+    response = client.chat.completions.create(
         model="gpt-4o-mini",
         messages=[
-            {"role": "system", "content": "Ты — мощная и дружелюбная AI Model LearnX."},
-            {"role": "user", "content": message}
+            {"role": "system", "content": "Ты — дружественный помощник LearnX."},
+            {"role": "user", "content": message},
         ]
-    ).choices[0].message.content
+    )
 
-    # Сохранить ответ
+    reply = response.choices[0].message.content
+
+    # сохранить ответ
     add_message(chat_id, "assistant", reply)
 
     return jsonify({"reply": reply})
