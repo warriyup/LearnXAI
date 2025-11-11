@@ -2,32 +2,39 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>LearnX AI</title>
-    <link rel="stylesheet" href="/full/static/style.css">
+    <title>LearnX</title>
+    <link rel="stylesheet" href="/full_version/static/style.css">
 </head>
 
 <body>
 
-<div id="sidebar">
-    <img id="logo" src="/full/static/logo.png" alt="logo">
-    <h2>LearnX</h2>
+<div class="layout">
 
-    <button id="new-chat">Новый чат</button>
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+        <div class="logo-box">
+            <img src="/full_version/static/logo.png" class="logo">
+            <h2>LearnX</h2>
+        </div>
 
-    <h3>Чаты</h3>
-    <div id="chat-list"></div>
-</div>
+        <button id="new-chat" class="menu-btn">Новый чат</button>
 
-<div id="chat-container">
-    <div id="chat-box"></div>
-
-    <div id="input-wrap">
-        <textarea id="msg" placeholder="Напишите сообщение..."></textarea>
-        <button id="send-btn">➤</button>
+        <div class="section-title">Чаты</div>
+        <div id="chat-list"></div>
     </div>
+
+    <!-- CHAT AREA -->
+    <div class="chat-area">
+        <div id="chat-box" class="chat-box"></div>
+
+        <div class="input-area">
+            <textarea id="msg" placeholder="Введите сообщение..."></textarea>
+            <button id="send-btn" class="send-btn">➤</button>
+        </div>
+    </div>
+
 </div>
 
-<script src="/full/static/app.js"></script>
-
+<script src="/full_version/static/app.js"></script>
 </body>
 </html>
