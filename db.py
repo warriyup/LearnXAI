@@ -35,8 +35,9 @@ def init_db():
     conn.commit()
 
 
-# ✅ правильная функция, заменяющая старый get_chats()
-def get_all_chats():
+# ✅ старый get_chats() и новый list_chats() теперь объединены
+def list_chats():
+    """Возвращает список всех чатов в формате {id: {...}}"""
     cur = get_conn().cursor()
     rows = cur.execute(
         "SELECT id, title, created_at FROM chats ORDER BY created_at DESC"
