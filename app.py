@@ -1,6 +1,6 @@
 from flask import Flask, request, redirect, render_template, jsonify
 import os, uuid, requests
-from db import init_db, list_chats, create_chat, get_chat, add_message, rename_chat, delete_chat
+from db import init_db, get_all_chats, new_chat, get_chat, add_message, rename_chat, delete_chat
 from full_version.app import blueprint as full_bp
 from light_version.app import blueprint as lite_bp
 
@@ -26,14 +26,14 @@ def settings():
     return render_template("settings.html")
 
 @app.route("/new_chat", methods=["POST"])
-def new_chat():
+def new_chat_route():
     chat_id = str(uuid.uuid4())
-    create_chat(chat_id)
+    new_chat(chat_id)
     return jsonify({"chat_id": chat_id})
 
 @app.route("/list_chats")
 def list_all_chats():
-    return jsonify(list_chats())
+    return jsonify(get_all_chats())
 
 @app.route("/get_chat/<chat_id>")
 def get_chat_by_id(chat_id):
