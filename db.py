@@ -3,7 +3,6 @@ from datetime import datetime
 
 DB_PATH = "database.db"
 
-
 def get_conn():
     conn = sqlite3.connect(DB_PATH, check_same_thread=False)
     conn.row_factory = sqlite3.Row
@@ -35,9 +34,8 @@ def init_db():
     conn.commit()
 
 
-# ✅ старый get_chats() и новый list_chats() теперь объединены
-def list_chats():
-    """Возвращает список всех чатов в формате {id: {...}}"""
+# --- Основная функция получения списка чатов ---
+def get_all_chats():
     cur = get_conn().cursor()
     rows = cur.execute(
         "SELECT id, title, created_at FROM chats ORDER BY created_at DESC"
@@ -52,7 +50,8 @@ def list_chats():
     }
 
 
-def create_chat(chat_id):
+# --- Создание нового чата ---
+def new_chat(chat_id):
     cur = get_conn().cursor()
     cur.execute(
         "INSERT INTO chats (id, title, created_at) VALUES (?, ?, ?)",
@@ -61,6 +60,7 @@ def create_chat(chat_id):
     cur.connection.commit()
 
 
+# --- Получение чата по ID ---
 def get_chat(chat_id):
     conn = get_conn()
     cur = conn.cursor()
@@ -84,6 +84,7 @@ def get_chat(chat_id):
     }
 
 
+# --- Добавление сообщения ---
 def add_message(chat_id, role, content):
     cur = get_conn().cursor()
     cur.execute(
@@ -93,6 +94,7 @@ def add_message(chat_id, role, content):
     cur.connection.commit()
 
 
+# --- Переименование чата ---
 def rename_chat(chat_id, title):
     cur = get_conn().cursor()
     cur.execute(
@@ -102,11 +104,18 @@ def rename_chat(chat_id, title):
     cur.connection.commit()
 
 
+# --- Удаление чата и всех его сообщений ---
 def delete_chat(chat_id):
     conn = get_conn()
     cur = conn.cursor()
-
     cur.execute("DELETE FROM messages WHERE chat_id=?", (chat_id,))
     cur.execute("DELETE FROM chats WHERE id=?", (chat_id,))
-
     conn.commit()
+
+
+# --- ✅ Обратная совместимость со старым app.py ---
+def list_chats():
+    return get_all_chats()
+
+def create_chat(chat_id):
+    return new_chat(chat_id)
