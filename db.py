@@ -52,7 +52,7 @@ def list_chats():
     }
 
 
-def new_chat(chat_id):
+def create_chat(chat_id):
     cur = get_conn().cursor()
     cur.execute(
         "INSERT INTO chats (id, title, created_at) VALUES (?, ?, ?)",
