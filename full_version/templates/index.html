@@ -3,36 +3,27 @@
 <head>
     <meta charset="UTF-8" />
     <title>LearnX</title>
-
-    <!-- FULL VERSION STATIC -->
-    <link rel="stylesheet" href="/full/static/style.css" />
-    <script defer src="/full/static/app.js"></script>
+    <link rel="stylesheet" href="{{ url_for('full.static', filename='style.css') }}">
+    <script defer src="{{ url_for('full.static', filename='app.js') }}"></script>
 </head>
-
 <body>
-
 <div class="layout">
-
-    <!-- SIDEBAR -->
     <div class="sidebar">
-
         <div class="logo-box">
-            <img src="/full/static/LearnX_Logo.jpg" class="logo">
+            <img src="{{ url_for('full.static', filename='LearnX_Logo.jpg') }}" class="logo" alt="logo">
             <h2>LearnX</h2>
         </div>
-
-        <button class="menu-btn" onclick="newChat()">Новый чат</button>
-
+        <button class="menu-btn main-btn" onclick="newChat()">Новый чат</button>
         <div class="section-title">Чаты</div>
-
         <div id="chat-list"></div>
-
     </div>
-
-    <!-- CHAT AREA -->
     <div class="chat-area">
-
         <div id="chat-box" class="chat-box"></div>
-
         <div class="input-area">
-            <i
+            <input id="msg" placeholder="Введите сообщение..." autofocus>
+            <button id="send-btn" class="send-btn"><span>➤</span></button>
+        </div>
+    </div>
+</div>
+</body>
+</html>
