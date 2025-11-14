@@ -1,332 +1,320 @@
-/* =========================================================
-   ROOT COLORS — base + theme variants
-========================================================= */
-:root {
-  --bg:#0a0a0b;
-  --panel:#0d0e0f;
-  --muted:#98a0a6;
+// === LearnX Full Version Client Script ===
 
-  /* NEW ACCENTS — Tech Deep Blue */
-  --accent:#0f75ff;
-  --accent-2:#00c2ff;
+// DOM references
+const chatBox = document.getElementById("chat-box");
+const msgInput = document.getElementById("msg");
+const sendBtn = document.getElementById("send-btn");
+const chatListRoot = document.getElementById("chat-list");
+const newChatBtn = document.getElementById("new-chat-btn");
+const searchInput = document.getElementById("search");
+const chatTitleEl = document.getElementById("chat-title");
+const versionBtn = document.getElementById("version-btn");
+const getVipBtn = document.getElementById("vip-btn");
 
-  /* message bubbles */
-  --bubble-user:#0d67e6;
-  --bubble-bot:#1e2124;
+let currentChat = null;
+let pendingRequestId = 0;
+let contextMenu = null;
 
-  --glass: rgba(255,255,255,0.02);
-  --radius:12px;
-  --font: Inter, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+// ============== UTILS ==============
+function escapeHtml(s) {
+  return String(s)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;");
 }
 
-/* =========================================================
-   THEMES — ready for VIP
-========================================================= */
-
-/* Default (already active): no changes */
-
-/* Gold VIP */
-body.theme-vip-gold {
-  --accent:#ffd76b;
-  --accent-2:#ffb340;
-  --bubble-user:#ffb52e;
+function mdToHtml(t) {
+  if (!t) return "";
+  let s = escapeHtml(t);
+  s = s.replace(/\*\*(.*?)\*\*/g, "<b>$1</b>");
+  s = s.replace(/\*(.*?)\*/g, "<i>$1</i>");
+  s = s.replace(/`([^`]+)`/g, "<code>$1</code>");
+  s = s.replace(/\r\n|\r/g, "\n");
+  s = s.replace(/\n{2,}/g, "</p><p>");
+  s = s.replace(/\n/g, "<br>");
+  return `<p>${s}</p>`;
 }
 
-/* Purple VIP */
-body.theme-vip-purple {
-  --accent:#a86bff;
-  --accent-2:#c29bff;
-  --bubble-user:#8d52ff;
+// ============== CHAT UI ==============
+function clearChatUI() {
+  chatBox.innerHTML = "";
 }
 
-/* Emerald VIP */
-body.theme-vip-emerald {
-  --accent:#1fe0a1;
-  --accent-2:#11c487;
-  --bubble-user:#0abf77;
+function addMessageToUI(text, sender) {
+  const row = document.createElement("div");
+  row.className = "msg-row " + (sender === "user" ? "user" : "bot");
+
+  const bubble = document.createElement("div");
+  bubble.className = "msg " + (sender === "user" ? "msg-user" : "msg-bot");
+  bubble.innerHTML = mdToHtml(text);
+
+  row.appendChild(bubble);
+  chatBox.appendChild(row);
+
+  chatBox.scrollTop = chatBox.scrollHeight;
 }
 
-/* =========================================================
-   BASE
-========================================================= */
-*{box-sizing:border-box}
-html,body{
-  height:100%;
-  margin:0;
-  font-family:var(--font);
-  background:linear-gradient(180deg,#070708,var(--bg));
-  color:#e6eef2;
-  -webkit-font-smoothing:antialiased;
-}
-.root{display:flex;min-height:100vh}
+function showThinking() {
+  const id = "thinking-indicator";
+  if (document.getElementById(id)) return;
 
-/* =========================================================
-   SIDEBAR
-========================================================= */
-.sidebar{
-  width:280px;
-  background:linear-gradient(180deg,#080808,#0c0c0d);
-  border-right:1px solid rgba(255,255,255,0.04);
-  display:flex;
-  flex-direction:column;
-  padding:18px;
-  gap:14px;
+  const row = document.createElement("div");
+  row.className = "msg-row bot";
+  row.id = id;
+
+  const bubble = document.createElement("div");
+  bubble.className = "msg msg-bot";
+  bubble.innerHTML = "<p>LearnX AI думает…</p>";
+
+  row.appendChild(bubble);
+  chatBox.appendChild(row);
+  chatBox.scrollTop = chatBox.scrollHeight;
 }
 
-.logo-box{display:flex;align-items:center;gap:12px}
-.logo{width:44px;height:44px;border-radius:8px;object-fit:cover}
-.brand{font-weight:800;font-size:18px;color:#fff}
-
-.search-row input{
-  width:100%;
-  padding:10px;
-  border-radius:10px;
-  border:1px solid rgba(255,255,255,0.05);
-  background:var(--glass);
-  color:#dfe7ea;
-  outline:none;
+function removeThinking() {
+  const t = document.getElementById("thinking-indicator");
+  if (t) t.remove();
 }
 
-/* =========================================================
-   BUTTONS
-========================================================= */
-.btn{
-  border:0;
-  padding:11px 14px;
-  border-radius:12px;
-  cursor:pointer;
-  font-weight:700;
-  transition:0.15s ease;
+// ============== CHAT LIST ==============
+async function loadChats() {
+  try {
+    const res = await fetch("/full/list_chats");
+    const data = await res.json();
+    renderChatList(data);
+  } catch (e) {
+    chatListRoot.innerHTML =
+      `<div style="color:var(--muted);padding:8px">Не удалось загрузить чаты</div>`;
+  }
 }
 
-.btn.primary{
-  background:linear-gradient(90deg,var(--accent),var(--accent-2));
-  color:#041417;
-  box-shadow:0 8px 20px rgba(0,155,255,0.12);
+function renderChatList(data) {
+  chatListRoot.innerHTML = "";
+
+  Object.keys(data).forEach(id => {
+    const info = data[id];
+    const item = document.createElement("div");
+    item.className = "chat-item";
+    item.dataset.chatId = id;
+
+    item.innerHTML = `
+      <span class="chat-title">${escapeHtml(info.title || "Новый чат")}</span>
+      <span class="dots">⋯</span>
+    `;
+
+    // Open chat by clicking item
+    item.addEventListener("click", () => openChat(id));
+
+    // Dots menu
+    const dots = item.querySelector(".dots");
+    dots.addEventListener("click", (ev) => {
+      ev.stopPropagation();
+      ev.preventDefault();
+      showContextMenu(ev, id);
+    });
+
+    chatListRoot.appendChild(item);
+  });
 }
 
-.btn.primary:hover{
-  filter:brightness(1.08);
-  transform:translateY(-1px);
+// ============== CHAT ACTIONS ==============
+async function newChat() {
+  try {
+    const res = await fetch("/full/new_chat", { method: "POST" });
+    const j = await res.json();
+    currentChat = j.chat_id;
+
+    clearChatUI();
+    addMessageToUI("Новый чат создан.", "bot");
+
+    await loadChats();
+    openChat(currentChat);
+  } catch (e) {
+    alert("Не удалось создать чат");
+  }
 }
 
-.btn.neutral{
-  background:#f6f6f6;
-  color:#111;
+async function openChat(id) {
+  currentChat = id;
+  clearChatUI();
+  setChatTitle("LearnX AI");
+
+  try {
+    const res = await fetch(`/full/get_chat/${encodeURIComponent(id)}`);
+    const d = await res.json();
+
+    setChatTitle(`LearnX AI — ${d.title || "Новый чат"}`);
+
+    (d.messages || []).forEach(m => {
+      addMessageToUI(m.content, m.role === "user" ? "user" : "bot");
+    });
+
+  } catch (e) {
+    addMessageToUI("Не удалось загрузить чат.", "bot");
+  }
 }
 
-.btn.accent{
-  background:transparent;
-  color:var(--accent);
-  border:1px solid rgba(0,179,255,0.18);
-  padding:8px 14px;
+function setChatTitle(text) {
+  chatTitleEl.textContent = text;
 }
 
-/* sidebars etc. */
-.chat-list{
-  display:flex;
-  flex-direction:column;
-  gap:8px;
-  overflow:auto;
-  padding:6px 2px;
+async function sendMessage() {
+  const text = msgInput.value.trim();
+  if (!text) return;
+  if (!currentChat) return alert("Сначала создайте чат.");
+
+  addMessageToUI(text, "user");
+  msgInput.value = "";
+  msgInput.focus();
+
+  showThinking();
+  const reqId = ++pendingRequestId;
+
+  try {
+    const res = await fetch(`/full/chat/${encodeURIComponent(currentChat)}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message: text })
+    });
+
+    const d = await res.json();
+
+    if (reqId !== pendingRequestId) {
+      removeThinking();
+      return;
+    }
+
+    removeThinking();
+    addMessageToUI(d.reply || "Ошибка AI", "bot");
+    loadChats();
+
+  } catch (e) {
+    removeThinking();
+    addMessageToUI("Ошибка соединения с ИИ.", "bot");
+  }
 }
 
-/* chat items */
-.chat-item{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  padding:10px;
-  border-radius:12px;
-  color:#e9eef3;
-  cursor:pointer;
-  transition:all .15s;
-}
-.chat-item:hover{
-  background:rgba(255,255,255,0.03);
+// ============== CONTEXT MENU (rename/delete) ==============
+function showContextMenu(ev, chatId) {
+  if (contextMenu) contextMenu.remove();
+
+  const menu = document.createElement("div");
+  menu.className = "context-menu";
+  menu.innerHTML = `
+    <button data-act="rename">Переименовать</button>
+    <button data-act="delete" class="danger">Удалить</button>
+  `;
+
+  document.getElementById("context-root").appendChild(menu);
+
+  menu.style.left = ev.pageX + "px";
+  menu.style.top = ev.pageY + "px";
+
+  contextMenu = menu;
+
+  menu.addEventListener("click", async (e) => {
+    const act = e.target.dataset.act;
+    if (!act) return;
+
+    if (act === "rename") {
+      const title = prompt("Новое название:");
+      if (!title) return;
+      await fetch(`/full/rename_chat/${chatId}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title })
+      });
+      loadChats();
+      if (currentChat === chatId) setChatTitle(`LearnX AI — ${title}`);
+    }
+
+    if (act === "delete") {
+      if (!confirm("Удалить чат?")) return;
+      await fetch(`/full/delete_chat/${chatId}`, { method: "POST" });
+      if (currentChat === chatId) {
+        clearChatUI();
+        setChatTitle("LearnX AI");
+        currentChat = null;
+      }
+      loadChats();
+    }
+
+    menu.remove();
+    contextMenu = null;
+  });
+
+  requestAnimationFrame(() => {
+    window.addEventListener("click", dismissContextMenu, { once: true });
+  });
 }
 
-/* dots fix */
-.dots{
-  opacity:0.5;
-  width:24px;
-  height:24px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  color:#98a0a6;
-}
-.chat-item:hover .dots{opacity:1}
-
-/* bottom block */
-.sidebar-bottom{
-  margin-top:auto;
-  gap:10px;
-  display:flex;
-  flex-direction:column;
-}
-.account-line{font-size:13px;color:var(--muted)}
-
-/* =========================================================
-   MAIN
-========================================================= */
-.main{
-  flex:1;
-  display:flex;
-  flex-direction:column;
+function dismissContextMenu() {
+  if (contextMenu) contextMenu.remove();
+  contextMenu = null;
 }
 
-.topbar{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  padding:18px 22px;
-  border-bottom:1px solid rgba(255,255,255,0.03);
+// ============== TOP RIGHT MENU ==============
+function createTopMenu() {
+  const popup = document.createElement("div");
+  popup.className = "menu-popup";
+  popup.id = "menu-popup";
+
+  popup.innerHTML = `
+    <button id="theme-toggle">Переключить тему</button>
+    <button id="about-btn">О приложении</button>
+  `;
+
+  document.body.appendChild(popup);
+
+  document.getElementById("theme-toggle").addEventListener("click", () => {
+    document.body.classList.toggle("theme-light");
+    popup.remove();
+  });
+
+  document.getElementById("about-btn").addEventListener("click", () => {
+    alert("LearnX — MVP. Версия v1.0");
+    popup.remove();
+  });
+
+  requestAnimationFrame(() => {
+    window.addEventListener("click", () => popup.remove(), { once: true });
+  });
 }
 
-/* top right menu button */
-.top-actions .btn.neutral{
-  background:rgba(255,255,255,0.05);
-  color:#eee;
-  padding:8px 12px;
-  border-radius:12px;
-}
-.top-actions .btn.neutral:hover{
-  background:rgba(255,255,255,0.08);
+// ============== INIT ==============
+async function init() {
+  newChatBtn.addEventListener("click", newChat);
+  sendBtn.addEventListener("click", sendMessage);
+
+  msgInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
+  });
+
+  searchInput.addEventListener("input", () => {
+    const q = searchInput.value.toLowerCase();
+    Array.from(chatListRoot.children).forEach(node => {
+      const t = node.querySelector(".chat-title").textContent.toLowerCase();
+      node.style.display = t.includes(q) ? "" : "none";
+    });
+  });
+
+  if (versionBtn) versionBtn.addEventListener("click", () => alert("Скоро!"));
+  if (getVipBtn) getVipBtn.addEventListener("click", () => alert("VIP скоро!"));
+
+  const menuBtn = document.getElementById("menu-btn");
+  if (menuBtn) {
+    menuBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const exists = document.getElementById("menu-popup");
+      if (exists) return exists.remove();
+      createTopMenu();
+    });
+  }
+
+  await loadChats();
 }
 
-/* context menu */
-.menu-popup{
-  position:absolute;
-  right:18px;
-  top:56px;
-  background:#0f1112;
-  border:1px solid rgba(255,255,255,0.05);
-  padding:8px;
-  border-radius:10px;
-  width:180px;
-  z-index:2000;
-}
-.menu-popup button{
-  width:100%;
-  padding:8px 10px;
-  background:transparent;
-  border:0;
-  color:#e9eef3;
-  text-align:left;
-  cursor:pointer;
-}
-.menu-popup button:hover{
-  background:rgba(255,255,255,0.03);
-}
-
-/* =========================================================
-   CHAT AREA
-========================================================= */
-.chat-area{
-  flex:1;
-  display:flex;
-  flex-direction:column;
-  padding:18px;
-  gap:12px;
-}
-
-.chat-box{
-  flex:1;
-  overflow:auto;
-  padding:10px 12px;
-  display:flex;
-  flex-direction:column;
-  justify-content:flex-end;
-  gap:12px;
-}
-
-/* bubbles */
-.msg{
-  display:inline-block;
-  padding:12px 16px;
-  border-radius:16px;
-  max-width:clamp(180px,48vw,60%);
-  line-height:1.45;
-  animation:fadeIn .2s ease;
-}
-
-.msg-bot{
-  background:var(--bubble-bot);
-  color:#e7eaed;
-  align-self:flex-start;
-  border-top-left-radius:6px;
-}
-
-.msg-user{
-  background:linear-gradient(90deg,var(--bubble-user),var(--accent));
-  color:#fff;
-  align-self:flex-end;
-  border-top-right-radius:6px;
-}
-
-/* =========================================================
-   COMPOSER
-========================================================= */
-.composer{
-  display:flex;
-  align-items:center;
-  gap:12px;
-  padding:12px;
-  border-radius:18px;
-  background:linear-gradient(180deg,rgba(255,255,255,0.02),transparent);
-  margin:0 18px 18px;
-}
-
-.msg-input{
-  flex:1;
-  resize:none;
-  background:transparent;
-  border:0;
-  color:#fff;
-  min-height:48px;
-  max-height:160px;
-  padding:12px;
-  outline:none;
-}
-
-/* send */
-.send-btn{
-  width:52px;
-  height:52px;
-  border-radius:14px;
-  background:linear-gradient(90deg,var(--accent),var(--accent-2));
-  border:0;
-  color:#021a20;
-  font-size:20px;
-  cursor:pointer;
-  transition:0.15s ease;
-}
-.send-btn:hover{
-  filter:brightness(1.1);
-  transform:translateY(-1px);
-}
-
-/* =========================================================
-   RESPONSIVE
-========================================================= */
-@media(max-width:900px){
-  .sidebar{width:78px;padding:14px}
-  .brand{display:none}
-  .search-row{display:none}
-
-   /* FIX: message rows alignment */
-.msg-row {
-  display: flex;
-  width: 100%;
-}
-
-/* user → справа */
-.msg-row.user {
-  justify-content: flex-end;
-}
-
-/* bot → слева */
-.msg-row.bot {
-  justify-content: flex-start;
-}
+init();
