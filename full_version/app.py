@@ -9,10 +9,13 @@ init_db()
 blueprint = Blueprint("full", __name__, template_folder="templates", static_folder="static", static_url_path="/full/static")
 
 OPENROUTER_KEY = os.environ.get("OPENROUTER_KEY") or os.environ.get("OPENAI_API_KEY")
+# модель можно переопределить через переменную окружения MODEL
+DEFAULT_MODEL = os.environ.get("MODEL", "qwen2.5-7b-instruct")
 
-def ask_openrouter(messages, model="qwen/qwen2.5-7b-instruct:free", max_tokens=300, temperature=0.7):
+def ask_openrouter(messages, model=DEFAULT_MODEL, max_tokens=300, temperature=0.7):
     if not OPENROUTER_KEY:
         return "Ошибка: ключ API для OpenRouter не настроен."
+
     url = "https://openrouter.ai/api/v1/chat/completions"
     headers = {
         "Authorization": f"Bearer {OPENROUTER_KEY}",
@@ -27,9 +30,10 @@ def ask_openrouter(messages, model="qwen/qwen2.5-7b-instruct:free", max_tokens=3
     try:
         resp = requests.post(url, json=payload, headers=headers, timeout=30)
         if not resp.ok:
+            # возвращаем текст ошибки от OpenRouter (поможет дебагу)
             try:
-                return f"Ошибка от OpenRouter: {resp.status_code} {resp.text[:300]}"
-            except:
+                return f"Ошибка от OpenRouter: {resp.status_code} {resp.text}"
+            except Exception:
                 return f"Ошибка от OpenRouter: {resp.status_code}"
         j = resp.json()
         choices = j.get("choices")
