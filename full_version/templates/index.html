@@ -1,69 +1,49 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>LearnX — AI</title>
-  <link rel="stylesheet" href="/full/static/style.css" />
-  <script defer src="/full/static/app.js"></script>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LearnX — Полная версия</title>
+
+    <!-- STATIC -->
+    <link rel="stylesheet" href="{{ url_for('full.static', filename='style.css') }}">
+    <script defer src="{{ url_for('full.static', filename='app.js') }}"></script>
 </head>
+
 <body>
-  <div class="root">
+
+<div class="layout">
+
+    <!-- SIDEBAR -->
     <aside class="sidebar">
-      <div class="sidebar-top">
-        <div class="logo-row">
-          <img src="/full/static/LearnX_Logo.jpg" alt="logo" class="logo"/>
-          <div class="brand">LearnX</div>
-        </div>
-        <div class="search-row">
-          <input id="search" placeholder="Поиск чатов..." />
-        </div>
-        <button id="new-chat-btn" class="btn primary">Новый чат</button>
-      </div>
 
-      <div class="chats-title">Чаты</div>
-      <div id="chat-list" class="chat-list"></div>
-
-      <div class="sidebar-bottom">
-        <div class="account-line">
-          <div class="acc-left">
-            <div class="acc-name" id="acc-name">@you</div>
-            <div class="acc-meta" id="acc-meta">VIP · 112:47h</div>
-          </div>
-          <div class="acc-stats" id="acc-stats">Msgs: 1,006,533</div>
+        <div class="logo-box">
+            <img src="{{ url_for('full.static', filename='LearnX_Logo.jpg') }}" class="logo">
+            <h2>LearnX</h2>
         </div>
-        <button id="settings-btn" class="btn neutral">Настройки</button>
-      </div>
+
+        <button class="menu-btn" onclick="newChat()">Новый чат</button>
+
+        <div class="section-title">Чаты</div>
+
+        <div id="chat-list"></div>
+
     </aside>
 
-    <main class="main">
-      <header class="topbar">
-        <div class="chat-title" id="chat-title">LearnX AI</div>
-        <div class="top-actions">
-          <button id="vip-btn" class="btn accent">Get VIP</button>
-        </div>
-      </header>
+    <!-- CHAT AREA -->
+    <main class="chat-area">
 
-      <section class="chat-area">
-        <div id="chat-box" class="chat-box" aria-live="polite"></div>
+        <div id="chat-box" class="chat-box"></div>
 
-        <div class="composer">
-          <div class="left-addon">
-            <div class="lx-badge">LX</div>
-          </div>
-          <textarea id="msg" class="msg-input" placeholder="Ask me anything..." rows="1"></textarea>
-          <div class="composer-right">
-            <button id="send-btn" class="send-btn">➤</button>
-          </div>
+        <div class="input-area">
+            <i class="send-icon"></i>
+            <textarea id="user-input" placeholder="Введите сообщение..." rows="1"></textarea>
+            <button class="send-btn" onclick="sendMessage()">➤</button>
         </div>
 
-        <div class="below">
-          <div id="daily-counter" class="daily-counter">You have 0 messages today</div>
-        </div>
-      </section>
     </main>
-  </div>
 
-  <div id="context-root"></div>
+</div>
+
 </body>
 </html>
