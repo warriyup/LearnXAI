@@ -121,3 +121,44 @@ html,body{height:100%;margin:0;font-family:var(--font);background:linear-gradien
 /* appearance */
 .msg{transform-origin:left center;animation:fadeIn .18s ease}
 @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+/* topbar menu button: прозрачный фон, круглые углы */
+.top-actions .btn.neutral {
+  background: rgba(255,255,255,0.06);
+  border: 0;
+  padding: 8px 12px;
+  border-radius: 12px;
+  box-shadow: none;
+  cursor: pointer;
+  color: #e9eef3;
+}
+
+/* чуть более заметный при ховере */
+.top-actions .btn.neutral:hover {
+  background: rgba(255,255,255,0.08);
+}
+
+/* маленькое попап-меню */
+.menu-popup {
+  position: absolute;
+  right: 18px;
+  top: 56px;
+  background: #0f1112;
+  border: 1px solid rgba(255,255,255,0.03);
+  padding: 8px;
+  border-radius: 10px;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.6);
+  z-index: 2000;
+  width: 180px;
+}
+.menu-popup button {
+  display:block;
+  width:100%;
+  text-align:left;
+  padding:8px 10px;
+  background:transparent;
+  border:0;
+  color:#e9eef3;
+  cursor:pointer;
+}
+.menu-popup button:hover { background: rgba(255,255,255,0.02) }
