@@ -314,4 +314,19 @@ html,body{
   .sidebar{width:78px;padding:14px}
   .brand{display:none}
   .search-row{display:none}
+
+   /* FIX: message rows alignment */
+.msg-row {
+  display: flex;
+  width: 100%;
+}
+
+/* user → справа */
+.msg-row.user {
+  justify-content: flex-end;
+}
+
+/* bot → слева */
+.msg-row.bot {
+  justify-content: flex-start;
 }
