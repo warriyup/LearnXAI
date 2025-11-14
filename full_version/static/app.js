@@ -219,3 +219,42 @@ async function init(){
 function updateDailyCounter(n){ dailyCounter.textContent = `You have ${n} messages today`; const bot = document.getElementById("daily-counter-bottom"); if(bot) bot.textContent = `You have ${n} messages today`; }
 
 init();
+
+// --- меню / три точки ---
+function createMenuPopup(){
+  const popup = document.createElement("div");
+  popup.className = "menu-popup";
+  popup.id = "menu-popup";
+  popup.innerHTML = `
+    <button id="theme-toggle">Переключить тему</button>
+    <button id="about-btn">О приложении</button>
+  `;
+  document.body.appendChild(popup);
+
+  // handlers
+  document.getElementById("theme-toggle").addEventListener("click", ()=>{
+    document.documentElement.classList.toggle("light-theme");
+    popup.remove();
+  });
+  document.getElementById("about-btn").addEventListener("click", ()=>{
+    alert("LearnX — MVP. Версия: v1.0");
+    popup.remove();
+  });
+
+  // click outside closes
+  setTimeout(()=> { window.addEventListener("click", ()=> popup.remove(), { once:true }); }, 10);
+  return popup;
+}
+
+document.addEventListener("DOMContentLoaded", ()=>{
+  const menuBtn = document.getElementById("menu-btn");
+  if(menuBtn){
+    menuBtn.addEventListener("click", (e)=>{
+      e.stopPropagation();
+      // если уже есть — убрать
+      const existing = document.getElementById("menu-popup");
+      if(existing){ existing.remove(); return; }
+      createMenuPopup();
+    });
+  }
+});
