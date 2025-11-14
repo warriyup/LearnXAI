@@ -1,46 +1,42 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LearnX — Полная версия</title>
 
-    <!-- STATIC -->
     <link rel="stylesheet" href="{{ url_for('full.static', filename='style.css') }}">
     <script defer src="{{ url_for('full.static', filename='app.js') }}"></script>
 </head>
 
 <body>
 
-<div class="layout">
+<div class="container">
 
     <!-- SIDEBAR -->
     <aside class="sidebar">
 
         <div class="logo-box">
             <img src="{{ url_for('full.static', filename='LearnX_Logo.jpg') }}" class="logo">
-            <h2>LearnX</h2>
+            <h1>LearnX</h1>
         </div>
 
-        <button class="menu-btn" onclick="newChat()">Новый чат</button>
+        <button class="new-chat-btn" onclick="newChat()">Новый чат</button>
 
-        <div class="section-title">Чаты</div>
+        <h2 class="section-title">Чаты</h2>
 
-        <div id="chat-list"></div>
+        <div id="chat-list" class="chat-list"></div>
 
     </aside>
 
     <!-- CHAT AREA -->
-    <main class="chat-area">
-
+    <main class="chat-wrapper">
         <div id="chat-box" class="chat-box"></div>
 
-        <div class="input-area">
-            <i class="send-icon"></i>
+        <div class="input-wrapper">
             <textarea id="user-input" placeholder="Введите сообщение..." rows="1"></textarea>
             <button class="send-btn" onclick="sendMessage()">➤</button>
         </div>
-
     </main>
 
 </div>
