@@ -1,88 +1,92 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>LearnX — Полная версия</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LearnX — Полная версия</title>
 
-  <link rel="stylesheet" href="{{ url_for('full.static', filename='style.css') }}" />
-  <script defer src="{{ url_for('full.static', filename='app.js') }}"></script>
+    <link rel="stylesheet" href="{{ url_for('full.static', filename='style.css') }}">
+    <script defer src="{{ url_for('full.static', filename='app.js') }}"></script>
 </head>
 
-<body class="theme-dark">
-
+<body>
 <div class="root">
 
-  <!-- SIDEBAR -->
-  <aside class="sidebar">
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
 
-    <div class="logo-box">
-      <img src="{{ url_for('full.static', filename='LearnX_Logo.jpg') }}" class="logo" alt="LearnX Logo">
-      <div class="brand-row">
-        <div class="lx-small">LX</div>
-        <div class="brand">LearnX</div>
-      </div>
-    </div>
-
-    <div class="search-row">
-      <input id="search" type="text" placeholder="Поиск в чатах..." />
-    </div>
-
-    <div class="sidebar-actions">
-      <button id="new-chat-btn" class="btn primary">Новый чат</button>
-      <button id="get-vip-btn" class="btn neutral">Get VIP</button>
-    </div>
-
-    <div class="chats-title">Чаты</div>
-    <div id="chat-list" class="chat-list"></div>
-
-    <div class="sidebar-bottom">
-      <div class="account-line">
-        <div class="acc-left">
-          <div class="acc-name">LearnX AI</div>
-          <div class="acc-meta">v1.0</div>
+        <!-- LOGO -->
+        <div class="logo-box">
+            <img src="{{ url_for('full.static', filename='LearnX_Logo.jpg') }}" class="logo" alt="LearnX Logo">
+            <div class="brand-row">
+                <div class="brand">LearnX</div>
+            </div>
         </div>
-      </div>
-      <div id="daily-counter" class="acc-stats">You have 0 messages today</div>
-    </div>
 
-  </aside>
+        <!-- SEARCH -->
+        <div class="search-row">
+            <input id="search" type="text" placeholder="Поиск...">
+        </div>
 
-  <!-- MAIN -->
-  <main class="main">
+        <!-- NEW CHAT BUTTON -->
+        <button id="new-chat-btn" class="btn primary">Новый чат</button>
 
-    <header class="topbar">
-      <div id="chat-title" class="chat-title">LearnX AI</div>
-      <div class="top-actions">
-        <button id="theme-toggle" class="btn neutral" title="Тема">⋯</button>
-      </div>
-    </header>
+        <!-- GET VIP BUTTON -->
+        <button id="vip-btn" class="btn primary">Get VIP</button>
 
-    <section class="chat-area">
-      <div id="chat-box" class="chat-box" aria-live="polite"></div>
-    </section>
+        <!-- CHATS TITLE -->
+        <div class="chats-title">Чаты</div>
 
-    <div class="composer">
-      <div class="left-addon">
-        <div id="version-btn" class="lx-badge" title="Изменить версию ИИ">LX</div>
-      </div>
+        <!-- CHAT LIST -->
+        <div id="chat-list" class="chat-list"></div>
 
-      <textarea id="msg" class="msg-input" placeholder="Ask whatever you want" rows="1"></textarea>
+        <!-- Sidebar bottom info -->
+        <div class="sidebar-bottom">
+            <div class="account-line">
+                <span class="acc-name">LearnX AI</span>
+                <span class="acc-meta">v1.0</span>
+            </div>
+        </div>
 
-      <div class="composer-right">
-        <button id="send-btn" class="send-btn" title="Отправить">➤</button>
-      </div>
-    </div>
+    </aside>
 
-    <div class="below">
-      <div id="daily-counter-bottom" class="daily-counter"></div>
-    </div>
+    <!-- MAIN AREA -->
+    <main class="main">
 
-  </main>
+        <!-- TOP BAR -->
+        <header class="topbar">
+            <div id="chat-title" class="chat-title">LearnX AI - Новый чат</div>
+            <div class="top-actions">
+                <button id="theme-toggle" class="btn neutral" title="Тема">⋯</button>
+            </div>
+        </header>
+
+        <!-- CHAT AREA -->
+        <section class="chat-area">
+            <div id="chat-box" class="chat-box" aria-live="polite"></div>
+        </section>
+
+        <!-- COMPOSER -->
+        <div class="composer">
+            <div class="left-addon">
+                <div id="version-btn" class="lx-badge" title="Изменить версию ИИ">LX</div>
+            </div>
+
+            <textarea id="msg" class="msg-input" placeholder="Ask whatever you want" rows="1"></textarea>
+
+            <div class="composer-right">
+                <button id="send-btn" class="send-btn" title="Отправить">➤</button>
+            </div>
+        </div>
+
+        <div class="below">
+            <div id="daily-counter-bottom" class="daily-counter"></div>
+        </div>
+
+    </main>
 
 </div>
 
 <div id="context-root"></div>
-
 </body>
 </html>
