@@ -2,189 +2,198 @@ const chatBox = document.getElementById("chat-box");
 const msgInput = document.getElementById("msg");
 const sendBtn = document.getElementById("send-btn");
 const chatListRoot = document.getElementById("chat-list");
+const newChatBtn = document.getElementById("new-chat-btn");
+const searchInput = document.getElementById("search");
+const chatTitleEl = document.getElementById("chat-title");
+const dailyCounter = document.getElementById("daily-counter");
 
 let currentChat = null;
+let pendingRequestId = 0;
+let contextMenu = null;
 
-// Markdown-like formatting
-function md(t) {
-    return t
-        .replace(/\*\*(.*?)\*\*/g, "<b>$1</b>")
-        .replace(/\*(.*?)\*/g, "<i>$1</i>")
-        .replace(/`([^`]+)`/g, "<code>$1</code>")
-        .replace(/\n{2,}/g, "</p><p>")
-        .replace(/\n/g, "<br>");
+function escapeHtml(s){ return String(s).replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;"); }
+
+function mdToHtml(t){
+  if(!t) return "";
+  let s = escapeHtml(t);
+  s = s.replace(/\*\*(.*?)\*\*/g,"<b>$1</b>");
+  s = s.replace(/\*(.*?)\*/g,"<i>$1</i>");
+  s = s.replace(/`([^`]+)`/g,"<code>$1</code>");
+  s = s.replace(/\r\n|\r/g,"\n");
+  s = s.replace(/\n{2,}/g,"</p><p>");
+  s = s.replace(/\n/g,"<br>");
+  return `<p>${s}</p>`;
 }
 
-function clearChatUI() {
-    chatBox.innerHTML = "";
+function clearChatUI(){ chatBox.innerHTML = ""; }
+
+function addMessageToUI(text, sender){
+  const row = document.createElement("div");
+  row.className = "msg-row " + (sender === "user" ? "user":"bot");
+  const bubble = document.createElement("div");
+  bubble.className = "msg " + (sender === "user" ? "msg-user" : "msg-bot");
+  bubble.innerHTML = mdToHtml(text);
+  if(sender === "user"){
+    row.appendChild(bubble);
+  } else {
+    row.appendChild(bubble);
+  }
+  chatBox.appendChild(row);
+  chatBox.scrollTop = chatBox.scrollHeight;
 }
 
-function addMsg(text, sender) {
-    const div = document.createElement("div");
-    div.className = sender === "user" ? "msg-user" : "msg-bot";
-    div.innerHTML = `<p>${md(text)}</p>`;
-    chatBox.appendChild(div);
-    chatBox.scrollTop = chatBox.scrollHeight;
+function showThinking(){
+  const id = "thinking-indicator";
+  if(document.getElementById(id)) return;
+  const row = document.createElement("div");
+  row.className = "msg-row bot";
+  row.id = id;
+  const bubble = document.createElement("div");
+  bubble.className = "msg msg-bot";
+  bubble.innerHTML = "<p>LearnX AI думает…</p>";
+  row.appendChild(bubble);
+  chatBox.appendChild(row);
+  chatBox.scrollTop = chatBox.scrollHeight;
 }
 
-function addThinking() {
-    const div = document.createElement("div");
-    div.className = "msg-bot";
-    div.id = "thinking";
-    div.innerHTML = "<p>LearnX AI думает…</p>";
-    chatBox.appendChild(div);
-    chatBox.scrollTop = chatBox.scrollHeight;
+function removeThinking(){
+  const t = document.getElementById("thinking-indicator");
+  if(t) t.remove();
 }
 
-function removeThinking() {
-    const el = document.getElementById("thinking");
-    if (el) el.remove();
-}
-
-async function loadChats() {
-    try {
-        const res = await fetch("/list_chats");
-        const data = await res.json();
-        chatListRoot.innerHTML = "";
-
-        for (const id of Object.keys(data)) {
-            const item = document.createElement("div");
-            item.className = "chat-item";
-            item.innerHTML = `
-                <span class="chat-title">${data[id].title}</span>
-                <span class="dots">⋯</span>
-            `;
-
-            item.onclick = () => openChat(id);
-            item.querySelector(".dots").onclick = (ev) => {
-                ev.stopPropagation();
-                showMenu(ev, id);
-            };
-
-            chatListRoot.appendChild(item);
-        }
-    } catch (e) {
-        console.error(e);
-    }
-}
-
-async function newChat() {
-    const res = await fetch("/new_chat", { method: "POST" });
+async function loadChats(){
+  try{
+    const res = await fetch("/full/list_chats");
+    if(!res.ok) throw new Error("failed");
     const data = await res.json();
-    currentChat = data.chat_id;
+    renderChatList(data);
+  }catch(e){
+    chatListRoot.innerHTML = `<div style="color:var(--muted);padding:8px">Не удалось загрузить чаты</div>`;
+  }
+}
 
+function renderChatList(data){
+  chatListRoot.innerHTML = "";
+  const keys = Object.keys(data);
+  keys.forEach(id=>{
+    const info = data[id] || {};
+    const item = document.createElement("div");
+    item.className = "chat-item";
+    item.dataset.chatId = id;
+    item.innerHTML = `<span class="chat-title">${escapeHtml(info.title||"Новый чат")}</span><span class="dots">⋯</span>`;
+    item.onclick = ()=>openChat(id);
+    item.querySelector(".dots").addEventListener("click", (ev)=>{ ev.stopPropagation(); showContextMenu(ev, id); });
+    chatListRoot.appendChild(item);
+  });
+}
+
+async function newChat(){
+  try{
+    const res = await fetch("/full/new_chat", { method:"POST" });
+    if(!res.ok) throw new Error("failed");
+    const j = await res.json();
+    currentChat = j.chat_id;
     clearChatUI();
-    addMsg("Новый чат создан!", "bot");
-
+    addMessageToUI("Новый чат создан.","bot");
     await loadChats();
     openChat(currentChat);
+  }catch(e){
+    alert("Не удалось создать чат");
+  }
 }
 
-async function openChat(id) {
-    currentChat = id;
-    clearChatUI();
-
-    const res = await fetch(`/get_chat/${id}`);
-    const data = await res.json();
-
-    for (const msg of data.messages) {
-        addMsg(msg.content, msg.role === "user" ? "user" : "bot");
-    }
-}
-
-async function sendMessage() {
-    const text = msgInput.value.trim();
-    if (!text || !currentChat) return;
-
-    addMsg(text, "user");
-    msgInput.value = "";
-    addThinking();
-
-    try {
-        const res = await fetch(`/chat/${currentChat}`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ message: text })
-        });
-
-        const data = await res.json();
-        removeThinking();
-        addMsg(data.reply, "bot");
-        await loadChats();
-
-    } catch (e) {
-        removeThinking();
-        addMsg("Ошибка соединения с ИИ.", "bot");
-    }
-}
-
-// ===== CONTEXT MENU =====
-
-let menu = null;
-
-function showMenu(ev, id) {
-    if (menu) menu.remove();
-
-    menu = document.createElement("div");
-    menu.className = "context-menu";
-    menu.innerHTML = `
-        <button data-act="rename">Переименовать</button>
-        <button data-act="delete" class="danger">Удалить</button>
-    `;
-
-    document.body.appendChild(menu);
-    menu.style.left = ev.pageX + "px";
-    menu.style.top = ev.pageY + "px";
-    menu.style.display = "block";
-
-    menu.onclick = e => {
-        if (e.target.dataset.act === "rename") renameChat(id);
-        if (e.target.dataset.act === "delete") deleteChat(id);
-        menu.remove();
-        menu = null;
-    };
-
-    window.addEventListener("click", () => {
-        if (menu) menu.remove();
-        menu = null;
-    }, { once: true });
-}
-
-async function renameChat(id) {
-    const t = prompt("Новое название:");
-    if (!t) return;
-
-    await fetch(`/rename_chat/${id}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title: t })
+async function openChat(id){
+  currentChat = id;
+  clearChatUI();
+  chatTitleEl.textContent = "LearnX AI";
+  try{
+    const res = await fetch(`/full/get_chat/${encodeURIComponent(id)}`);
+    if(!res.ok) throw new Error("failed");
+    const d = await res.json();
+    chatTitleEl.textContent = d.title || "LearnX AI";
+    (d.messages||[]).forEach(m=>{
+      addMessageToUI(m.content, m.role === "user" ? "user":"bot");
     });
-
-    loadChats();
+  }catch(e){
+    addMessageToUI("Не удалось загрузить этот чат.","bot");
+  }
 }
 
-async function deleteChat(id) {
-    if (!confirm("Удалить чат?")) return;
-
-    await fetch(`/delete_chat/${id}`, { method: "POST" });
-
-    if (currentChat === id) {
-        clearChatUI();
-        currentChat = null;
+async function sendMessage(){
+  const text = msgInput.value.trim();
+  if(!text) return;
+  if(!currentChat){ alert("Сначала создайте чат."); return; }
+  addMessageToUI(text, "user");
+  msgInput.value = "";
+  msgInput.focus();
+  showThinking();
+  const thisReq = ++pendingRequestId;
+  try{
+    const res = await fetch(`/full/chat/${encodeURIComponent(currentChat)}`, {
+      method:"POST",
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({ message: text })
+    });
+    if(!res.ok) throw new Error("failed");
+    const d = await res.json();
+    if(thisReq !== pendingRequestId){
+      removeThinking();
+      return;
     }
-
-    loadChats();
+    removeThinking();
+    const reply = (d && typeof d.reply === "string") ? d.reply : "Не удалось получить ответ от AI.";
+    addMessageToUI(reply, "bot");
+    await loadChats();
+  }catch(e){
+    removeThinking();
+    addMessageToUI("Ошибка соединения с ИИ.", "bot");
+  }
 }
 
-// ===== EVENTS =====
-
-msgInput.addEventListener("keydown", e => {
-    if (e.key === "Enter" && !e.shiftKey) {
-        e.preventDefault();
-        sendMessage();
+function showContextMenu(ev, chatId){
+  if(contextMenu) contextMenu.remove();
+  const menu = document.createElement("div");
+  menu.className = "context-menu";
+  menu.innerHTML = `<button data-act="rename">Переименовать</button><button data-act="delete" class="danger">Удалить</button>`;
+  document.getElementById("context-root").appendChild(menu);
+  menu.style.left = Math.min(window.innerWidth - 220, ev.pageX) + "px";
+  menu.style.top = Math.min(window.innerHeight - 140, ev.pageY) + "px";
+  contextMenu = menu;
+  menu.addEventListener("click", async (e)=>{
+    const act = e.target.dataset.act;
+    if(!act) return;
+    if(act === "rename"){
+      const title = prompt("Новое название чата:");
+      if(!title) { menu.remove(); contextMenu = null; return; }
+      await fetch(`/full/rename_chat/${chatId}`, { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ title }) });
+      await loadChats();
+      if(currentChat === chatId) chatTitleEl.textContent = title;
+    } else if(act === "delete"){
+      if(!confirm("Удалить чат?")) { menu.remove(); contextMenu = null; return; }
+      await fetch(`/full/delete_chat/${chatId}`, { method:"POST" });
+      if(currentChat === chatId){ clearChatUI(); currentChat = null; chatTitleEl.textContent = "LearnX AI"; }
+      await loadChats();
     }
-});
+    menu.remove();
+    contextMenu = null;
+  });
+  setTimeout(()=>{ window.addEventListener("click", dismissContextMenu, { once:true }) }, 10);
+}
 
-sendBtn.onclick = sendMessage;
+function dismissContextMenu(){ if(contextMenu) contextMenu.remove(); contextMenu = null; }
 
-loadChats();
+async function init(){
+  newChatBtn.addEventListener("click", newChat);
+  sendBtn.addEventListener("click", sendMessage);
+  msgInput.addEventListener("keydown", (e)=>{ if(e.key === "Enter" && !e.shiftKey){ e.preventDefault(); sendMessage(); }});
+  searchInput.addEventListener("input", ()=>{ const q = searchInput.value.toLowerCase().trim(); Array.from(chatListRoot.children).forEach(node=>{ const t = node.querySelector(".chat-title").textContent.toLowerCase(); node.style.display = t.includes(q) ? "" : "none"; })});
+  await loadChats();
+  const urlParams = new URLSearchParams(window.location.search);
+  const initial = urlParams.get("chat");
+  if(initial) setTimeout(()=>openChat(initial), 250);
+  updateDailyCounter(0);
+}
+
+function updateDailyCounter(n){ dailyCounter.textContent = `You have ${n} messages today`; }
+
+init();
