@@ -18,17 +18,20 @@
 
         <!-- LOGO -->
         <div class="logo-box">
-            <img src="{{ url_for('full.static', filename='LearnX_Logo.jpg') }}" class="logo" alt="LearnX Logo">
+            <img src="{{ url_for('full.static', filename='LearnXai_Logo1.jpg') }}" class="logo" alt="LearnX Logo">
             <div class="brand">LearnX</div>
         </div>
 
         <!-- SEARCH -->
         <div class="search-row">
-            <input id="search" type="text" placeholder="Поиск...">
+            <input id="search" type="text" placeholder="Поиск в чатах...">
         </div>
 
         <!-- NEW CHAT BUTTON -->
         <button id="new-chat-btn" class="btn primary">Новый чат</button>
+
+        <!-- VIP BUTTON -->
+        <button id="vip-btn" class="btn vip">Get VIP</button>
 
         <!-- CHATS TITLE -->
         <div class="chats-title">Чаты</div>
@@ -65,19 +68,16 @@
 
         <!-- COMPOSER -->
         <div class="composer">
+
             <div class="left-addon">
-                <div class="lx-badge">LX</div>
+                <button id="model-switch" class="lx-badge">LX</button>
             </div>
 
-            <textarea id="msg" class="msg-input" placeholder="Введите сообщение..." rows="1"></textarea>
+            <textarea id="msg" class="msg-input" placeholder="ask whatever you want" rows="1"></textarea>
 
             <div class="composer-right">
                 <button id="send-btn" class="send-btn">➤</button>
             </div>
-        </div>
-
-        <div class="below">
-            <div id="daily-counter"></div>
         </div>
 
     </main>
