@@ -1,3 +1,4 @@
+// full version client script - replace entire file
 const chatBox = document.getElementById("chat-box");
 const msgInput = document.getElementById("msg");
 const sendBtn = document.getElementById("send-btn");
@@ -6,6 +7,9 @@ const newChatBtn = document.getElementById("new-chat-btn");
 const searchInput = document.getElementById("search");
 const chatTitleEl = document.getElementById("chat-title");
 const dailyCounter = document.getElementById("daily-counter");
+const versionBtn = document.getElementById("version-btn");
+const themeToggle = document.getElementById("theme-toggle");
+const getVipBtn = document.getElementById("get-vip-btn");
 
 let currentChat = null;
 let pendingRequestId = 0;
@@ -33,11 +37,7 @@ function addMessageToUI(text, sender){
   const bubble = document.createElement("div");
   bubble.className = "msg " + (sender === "user" ? "msg-user" : "msg-bot");
   bubble.innerHTML = mdToHtml(text);
-  if(sender === "user"){
-    row.appendChild(bubble);
-  } else {
-    row.appendChild(bubble);
-  }
+  row.appendChild(bubble);
   chatBox.appendChild(row);
   chatBox.scrollTop = chatBox.scrollHeight;
 }
@@ -82,7 +82,8 @@ function renderChatList(data){
     item.dataset.chatId = id;
     item.innerHTML = `<span class="chat-title">${escapeHtml(info.title||"Новый чат")}</span><span class="dots">⋯</span>`;
     item.onclick = ()=>openChat(id);
-    item.querySelector(".dots").addEventListener("click", (ev)=>{ ev.stopPropagation(); showContextMenu(ev, id); });
+    const dots = item.querySelector(".dots");
+    dots.addEventListener("click", (ev)=>{ ev.stopPropagation(); showContextMenu(ev, id); });
     chatListRoot.appendChild(item);
   });
 }
@@ -105,18 +106,23 @@ async function newChat(){
 async function openChat(id){
   currentChat = id;
   clearChatUI();
-  chatTitleEl.textContent = "LearnX AI";
+  setChatTitle("LearnX AI");
   try{
     const res = await fetch(`/full/get_chat/${encodeURIComponent(id)}`);
     if(!res.ok) throw new Error("failed");
     const d = await res.json();
-    chatTitleEl.textContent = d.title || "LearnX AI";
+    const chatName = d.title || "Новый чат";
+    setChatTitle(`LearnX AI — ${chatName}`);
     (d.messages||[]).forEach(m=>{
       addMessageToUI(m.content, m.role === "user" ? "user":"bot");
     });
   }catch(e){
     addMessageToUI("Не удалось загрузить этот чат.","bot");
   }
+}
+
+function setChatTitle(text){
+  chatTitleEl.textContent = text;
 }
 
 async function sendMessage(){
@@ -167,11 +173,11 @@ function showContextMenu(ev, chatId){
       if(!title) { menu.remove(); contextMenu = null; return; }
       await fetch(`/full/rename_chat/${chatId}`, { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ title }) });
       await loadChats();
-      if(currentChat === chatId) chatTitleEl.textContent = title;
+      if(currentChat === chatId) setChatTitle(`LearnX AI — ${title}`);
     } else if(act === "delete"){
       if(!confirm("Удалить чат?")) { menu.remove(); contextMenu = null; return; }
       await fetch(`/full/delete_chat/${chatId}`, { method:"POST" });
-      if(currentChat === chatId){ clearChatUI(); currentChat = null; chatTitleEl.textContent = "LearnX AI"; }
+      if(currentChat === chatId){ clearChatUI(); currentChat = null; setChatTitle("LearnX AI"); }
       await loadChats();
     }
     menu.remove();
@@ -182,11 +188,27 @@ function showContextMenu(ev, chatId){
 
 function dismissContextMenu(){ if(contextMenu) contextMenu.remove(); contextMenu = null; }
 
+function toggleTheme(){
+  const body = document.body;
+  if(body.classList.contains("theme-dark")){
+    body.classList.remove("theme-dark");
+    body.classList.add("theme-light");
+  } else {
+    body.classList.remove("theme-light");
+    body.classList.add("theme-dark");
+  }
+}
+
 async function init(){
   newChatBtn.addEventListener("click", newChat);
   sendBtn.addEventListener("click", sendMessage);
+  if(getVipBtn) getVipBtn.addEventListener("click", ()=>alert("Get VIP — пока без реализации"));
+  if(versionBtn) versionBtn.addEventListener("click", ()=>alert("Версия ИИ — переключение (пока заглушка)"));
+  if(themeToggle) themeToggle.addEventListener("click", toggleTheme);
+
   msgInput.addEventListener("keydown", (e)=>{ if(e.key === "Enter" && !e.shiftKey){ e.preventDefault(); sendMessage(); }});
   searchInput.addEventListener("input", ()=>{ const q = searchInput.value.toLowerCase().trim(); Array.from(chatListRoot.children).forEach(node=>{ const t = node.querySelector(".chat-title").textContent.toLowerCase(); node.style.display = t.includes(q) ? "" : "none"; })});
+
   await loadChats();
   const urlParams = new URLSearchParams(window.location.search);
   const initial = urlParams.get("chat");
@@ -194,6 +216,6 @@ async function init(){
   updateDailyCounter(0);
 }
 
-function updateDailyCounter(n){ dailyCounter.textContent = `You have ${n} messages today`; }
+function updateDailyCounter(n){ dailyCounter.textContent = `You have ${n} messages today`; const bot = document.getElementById("daily-counter-bottom"); if(bot) bot.textContent = `You have ${n} messages today`; }
 
 init();
