@@ -1,4 +1,4 @@
-/* ============== GLOBAL ============== */
+/* ================= GLOBAL ================= */
 
 :root {
     --bg: #0d0d0f;
@@ -34,29 +34,49 @@ body {
     --text-muted: #444;
 }
 
-/* ============== SIDEBAR ============== */
+/* ================= SIDEBAR ================= */
 
 .sidebar {
     width: 260px;
     background: var(--panel);
     border-right: 1px solid #222;
-    padding: 16px;
+    padding: 18px;
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 18px;
 }
 
-.sidebar .logo {
-    font-size: 24px;
-    font-weight: 700;
+/* LOGO (LX LearnX v1.0 — one line) */
+
+.logo-box {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.logo-box .logo {
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+}
+
+.brand-full {
     display: flex;
     align-items: center;
     gap: 6px;
 }
 
-.sidebar .logo img {
-    width: 28px;
-    height: 28px;
+.brand-main {
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--text);
+}
+
+.brand-version {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-muted);
+    opacity: 0.9;
 }
 
 .sidebar input {
@@ -69,33 +89,43 @@ body {
     color: var(--text);
 }
 
-.sidebar button {
+.btn {
     width: 100%;
-    padding: 10px 14px;
+    padding: 12px 14px;
     border: none;
     border-radius: var(--radius);
     cursor: pointer;
-    background: var(--accent);
-    color: #fff;
     font-weight: 600;
     transition: 0.2s;
 }
 
-.sidebar button:hover {
+.btn.primary {
+    background: var(--accent);
+    color: #fff;
+}
+
+.btn.primary:hover {
     background: var(--accent-hover);
 }
 
+.chats-title {
+    margin-top: 6px;
+    font-size: 14px;
+    color: var(--text-muted);
+}
+
 #chat-list {
-    margin-top: 8px;
+    flex: 1;
+    margin-top: 6px;
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 6px;
     overflow-y: auto;
     padding-right: 4px;
 }
 
 .chat-item {
-    padding: 10px;
+    padding: 10px 12px;
     border-radius: var(--radius);
     background: var(--panel-light);
     display: flex;
@@ -110,13 +140,17 @@ body {
     background: #26262c;
 }
 
+.chat-item .chat-title {
+    font-size: 14px;
+}
+
 .chat-item .dots {
     opacity: 0.7;
     cursor: pointer;
     font-size: 18px;
 }
 
-/* ============== CONTEXT MENU ============== */
+/* ================= CONTEXT MENU ================= */
 
 .context-menu {
     position: absolute;
@@ -127,6 +161,7 @@ body {
     display: flex;
     flex-direction: column;
     z-index: 9999;
+    width: 160px;
 }
 
 .context-menu button {
@@ -137,6 +172,7 @@ body {
     border-radius: var(--radius);
     text-align: left;
     cursor: pointer;
+    font-size: 14px;
 }
 
 .context-menu button:hover {
@@ -147,7 +183,7 @@ body {
     color: #ff5555;
 }
 
-/* ============== CHAT WINDOW ============== */
+/* ================= MAIN / TOPBAR ================= */
 
 .main {
     flex: 1;
@@ -156,7 +192,7 @@ body {
     background: var(--bg-light);
 }
 
-.header {
+.topbar {
     height: 52px;
     display: flex;
     align-items: center;
@@ -165,7 +201,7 @@ body {
     justify-content: space-between;
 }
 
-#chat-title {
+.chat-title {
     font-size: 18px;
     font-weight: 600;
 }
@@ -181,33 +217,39 @@ body {
     cursor: pointer;
 }
 
-/* ============== MESSAGES ============== */
+/* ================= CHAT AREA ================= */
+
+.chat-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
 
 #chat-box {
     flex: 1;
     overflow-y: auto;
-    padding: 24px;
+    padding: 22px;
     display: flex;
     flex-direction: column;
     gap: 14px;
 }
+
+/* Message rows */
 
 .msg-row {
     display: flex;
     width: 100%;
 }
 
-/* user = RIGHT */
 .msg-row.user {
     justify-content: flex-end;
 }
 
-/* bot = LEFT */
 .msg-row.bot {
     justify-content: flex-start;
 }
 
-/* bubbles */
+/* Bubbles */
 
 .msg {
     max-width: 70%;
@@ -218,48 +260,55 @@ body {
     box-shadow: 0 4px 20px rgba(0,0,0,0.2);
 }
 
-/* user bubble */
 .msg-user {
     background: var(--accent);
     color: #fff;
     border-bottom-right-radius: 4px;
 }
 
-/* bot bubble */
 .msg-bot {
     background: var(--panel-light);
     color: var(--text);
     border-bottom-left-radius: 4px;
 }
 
-/* ============== INPUT AREA ============== */
+/* ================= COMPOSER ================= */
 
-.input-bar {
+.composer {
     padding: 14px;
     border-top: 1px solid #222;
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 12px;
 }
 
-.input-inner {
+.left-addon {
+    display: flex;
+    align-items: center;
+}
+
+.lx-badge {
+    background: var(--panel-light);
+    padding: 8px 12px;
+    border-radius: var(--radius);
+    cursor: pointer;
+    font-weight: 700;
+    font-size: 14px;
+}
+
+.msg-input {
     flex: 1;
     background: var(--panel-light);
     border-radius: var(--radius);
-    display: flex;
-    align-items: center;
-    padding: 10px 14px;
-}
-
-.input-inner input {
-    flex: 1;
-    background: transparent;
     border: none;
     outline: none;
+    padding: 12px 14px;
     color: var(--text);
+    font-size: 15px;
+    resize: none;
 }
 
-#send-btn {
+.send-btn {
     width: 46px;
     height: 46px;
     border-radius: 50%;
@@ -273,11 +322,11 @@ body {
     transition: 0.2s;
 }
 
-#send-btn:hover {
+.send-btn:hover {
     background: var(--accent-hover);
 }
 
-/* ============== TOP MENU POPUP ============== */
+/* ================= TOP MENU POPUP ================= */
 
 .menu-popup {
     position: absolute;
@@ -301,6 +350,7 @@ body {
     text-align: left;
     color: var(--text);
     cursor: pointer;
+    font-size: 14px;
 }
 
 .menu-popup button:hover {
