@@ -17,15 +17,14 @@
         <!-- ========== SIDEBAR ========== -->
         <aside class="sidebar">
 
-   <div class="logo-box">
-    <img src="{{ url_for('full.static', filename='LearnX_Logo.jpg') }}" class="logo">
-    
-    <div class="brand-full">
-        <div class="brand-main">LearnX</div>
-        <div class="brand-version">v1.0</div>
-    </div>
-</div>
-
+            <div class="logo-box">
+                <img src="{{ url_for('full.static', filename='LearnX_Logo.jpg') }}" class="logo">
+                
+                <div class="brand-full">
+                    <div class="brand-main">LearnX</div>
+                    <div class="brand-version">v1.0</div>
+                </div>
+            </div>
 
             <!-- SEARCH INPUT -->
             <div class="search-row">
@@ -42,9 +41,17 @@
             <div class="chats-title">Чаты</div>
             <div id="chat-list" class="chat-list"></div>
 
+            <!-- ACCOUNT STATUS BLOCK -->
+            <div class="account-status">
+                <div class="acc-label">Аккаунт:</div>
+                <div class="acc-type free">Бесплатный</div>
+            </div>
+
             <!-- BOTTOM INFO -->
             <div class="sidebar-bottom">
                 <div class="account-line">
+                    <span class="acc-name">LearnX AI</span>
+                </div>
             </div>
 
         </aside>
