@@ -297,3 +297,28 @@ body {
 .danger {
     color: #ff3b3b;
 }
+
+/* ACCOUNT STATUS — under chat list */
+.account-status {
+    margin-top: 16px;
+    padding: 14px;
+    background: var(--panel-light);
+    border-radius: var(--radius);
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.acc-label {
+    font-size: 13px;
+    color: var(--text-muted);
+}
+
+.acc-type {
+    font-size: 15px;
+    font-weight: 600;
+}
+
+.acc-type.free {
+    color: #1e90ff; /* Blue accent */
+}
