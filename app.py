@@ -87,7 +87,7 @@ def chat_route(chat_id):
 
     # Забираем историю (не слишком длинную)
     raw_chat = get_chat(chat_id)
-    history = raw_chat["messages"][-8:] if raw_chat else []
+    history = raw_chat["messages"][-4:] if raw_chat else []
 
     # Префикс для "обучения" стиля ИИ
     system_prompt = {
