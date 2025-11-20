@@ -13,7 +13,7 @@ OPENROUTER_KEY = os.environ.get("OPENROUTER_KEY")
 MAIN_MODEL = "google/gemini-2.0-flash-lite-preview"
 FALLBACK_MODEL = "deepseek/deepseek-chat"
 MAX_INPUT_CHARS = 5000
-MAX_TOKENS = 1500
+MAX_TOKENS = 10000
 
 app = Flask(__name__)
 app.register_blueprint(full_bp, url_prefix="/full")
