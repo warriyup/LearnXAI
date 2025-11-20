@@ -4,16 +4,21 @@ from db import init_db, get_all_chats, new_chat, get_chat, add_message, rename_c
 from full_version.app import blueprint as full_bp
 from light_version.app import blueprint as lite_bp
 
+# =========================
+# ИНИЦИАЛИЗАЦИЯ
+# =========================
 init_db()
 OPENROUTER_KEY = os.environ.get("OPENROUTER_KEY")
 
-# -------------------------------
-# Настройки ИИ
-# -------------------------------
-MAIN_MODEL = "google/gemini-2.0-flash-lite-preview"
-FALLBACK_MODEL = "deepseek/deepseek-chat"
-MAX_INPUT_CHARS = 5000
-MAX_TOKENS = 10000
+# Модели
+MODEL_FREE = "google/gemini-2.0-flash-lite-preview"
+MODEL_VIP = "google/gemini-2.0-flash-preview"
+
+# Токены
+TOKENS_FREE = 200
+TOKENS_VIP = 800
+
+MAX_INPUT_CHARS = 3500   # меньше → дешевле
 
 app = Flask(__name__)
 app.register_blueprint(full_bp, url_prefix="/full")
@@ -67,45 +72,41 @@ def delete_chat_api(chat_id):
     return jsonify({"status": "ok"})
 
 
-# -------------------------------
-#  Основной чат-эндпоинт
-# -------------------------------
+# =========================
+#   ЧАТ
+# =========================
 @app.route("/chat/<chat_id>", methods=["POST"])
 def chat_route(chat_id):
 
     user_message = request.json.get("message", "").strip()
+    vip = request.json.get("vip", False)
 
     if not user_message:
         return jsonify({"reply": "Ошибка: пустое сообщение."})
 
-    # Ограничение длины входа
     if len(user_message) > MAX_INPUT_CHARS:
         user_message = user_message[:MAX_INPUT_CHARS]
 
-    # Записываем сообщение пользователя
     add_message(chat_id, "user", user_message)
 
-    # Забираем историю (не слишком длинную)
-    raw_chat = get_chat(chat_id)
-    history = raw_chat["messages"][-4:] if raw_chat else []
+    raw = get_chat(chat_id)
+    history = raw["messages"][-4:] if raw else []  # <= 4 последних сообщений
 
-    # Префикс для "обучения" стиля ИИ
+    # system prompt дешевый и короткий
     system_prompt = {
         "role": "system",
-        "content": (
-            "Ты — ИИ-помощник для школьников. "
-            "Отвечай коротко и понятно, "
-            "объясняй понятно и не используй матерные слова. "
-            "Не уходи в философию. Помогай решать учебные задачи."
-        )
+        "content":
+            "Ты — дружелюбный школьный помощник. "
+            "Отвечай коротко: 5–6 предложений максимум. "
+            "Без сложных терминов, без философии."
     }
 
-    full_messages = [system_prompt] + history
+    messages = [system_prompt] + history
 
     payload = {
-        "model": MAIN_MODEL,
-        "messages": full_messages,
-        "max_tokens": MAX_TOKENS,
+        "model": MODEL_VIP if vip else MODEL_FREE,
+        "messages": messages,
+        "max_tokens": TOKENS_VIP if vip else TOKENS_FREE,
         "temperature": 0.5
     }
 
@@ -114,44 +115,18 @@ def chat_route(chat_id):
         "Content-Type": "application/json"
     }
 
-    reply = "Ошибка соединения с ИИ."
-
-    # -------------------------------------
-    # 1. Пробуем основную модель
-    # -------------------------------------
     try:
         res = requests.post(
             "https://openrouter.ai/api/v1/chat/completions",
             json=payload,
             headers=headers,
-            timeout=30
+            timeout=20
         )
-        if res.ok:
-            j = res.json()
-            reply = j.get("choices", [{}])[0].get("message", {}).get("content", reply)
-        else:
-            raise Exception("Main model error")
+        j = res.json()
+        reply = j.get("choices", [{}])[0].get("message", {}).get("content", "Ошибка ИИ.")
     except:
-        # -------------------------------------
-        # 2. Fallback модель
-        # -------------------------------------
-        try:
-            payload["model"] = FALLBACK_MODEL
-            res = requests.post(
-                "https://openrouter.ai/api/v1/chat/completions",
-                json=payload,
-                headers=headers,
-                timeout=30
-            )
-            if res.ok:
-                j = res.json()
-                reply = j.get("choices", [{}])[0].get("message", {}).get("content", reply)
-            else:
-                reply = "Ошибка: ИИ сейчас недоступен."
-        except:
-            reply = "Ошибка: не удаётся получить ответ от ИИ."
+        reply = "Ошибка: нет ответа от модели."
 
-    # Записываем ответ ассистента
     add_message(chat_id, "assistant", reply)
 
     return jsonify({"reply": reply})
